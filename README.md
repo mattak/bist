@@ -4,7 +4,7 @@ Control gist files to install.
 
 # install
 
-    curl http://mattak.github.io/bist/install.sh | sh
+    curl -L https://raw.github.com/mattak/bist/master/install.sh >& /dev/null | sh
 
 # commands
 
