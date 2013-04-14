@@ -1,0 +1,203 @@
+#!/bin/sh
+
+BISTDIR=$HOME/.bist
+BISTDIR_BIN=$BISTDIR/bin
+BISTPATH=$BISTDIR_BIN/bist
+
+mkdir -p $BISTDIR_BIN
+
+cat <<'BISTCONTENT' > $BISTPATH
+#!/bin/zsh
+
+#
+# consts
+#
+BISTDIR=$HOME/.bist
+BISTDIR_BIN=$BISTDIR/bin
+BISTDIR_REPOS=$BISTDIR/repos
+GIST_URL=https://gist.github.com/
+
+#
+# usage
+#
+function usage() {
+    cat <<EOT
+USAGE:
+    bist [COMMAND] [ARGS]*
+
+COMMAND:
+    list
+        listup local gist repository.
+    list [GIST_NUMBER]
+        listup specified gist files.
+
+    show [GIST_NUMBER | FILENAME]
+        cat gist file.
+
+    install [GIST_NUMBER]
+        clone or pull gist files.
+
+    update
+        update all local gist files.
+
+    rehash
+        symbolic link to bin
+
+    rm [GIST_NUMBER]
+        remove gist repository.
+EOT
+
+    exit 0
+}
+
+#
+# bist chmod [gist_num]
+#
+function bist_chmod() {
+    gistdir=$1
+    for f in `find $gistdir -type f -depth 1`
+    do
+        chmod a+x $f
+    done
+}
+
+#
+# bist install [gist_num]
+#
+function bist_install() {
+    if [ $# -lt 1 ]; then
+        usage
+    fi
+    gistnum=$1
+    clonedir=$BISTDIR_REPOS/$gistnum
+
+    if [ ! -d $clonedir ]; then
+        git clone "${GIST_URL}${gistnum}.git" $clonedir > /dev/null 2>&1
+    else
+        cd $clonedir
+        git pull --rebase > /dev/null 2>&1
+        cd - > /dev/null
+    fi
+
+    bist_chmod $clonedir
+}
+
+#
+# bist update
+#
+function bist_update() {
+    for d in `find $BISTDIR_REPOS -type d -depth 1`
+    do
+        gist_num=`basename $d`
+        echo pull $gist_num
+        bist_install $gist_num
+    done
+}
+
+#
+# bist show [num | file]
+#
+function bist_show() {
+    if [ $# -lt 1 ]; then
+        usage 
+    fi
+
+    num_or_file=$1
+    isnum=`echo $num_or_file | egrep "^[0-9]+$"`
+
+    file=""
+    if [ $isnum -a -d "$BISTDIR_REPOS/$num_or_file" ]; then
+        file=`find $BISTDIR_REPOS/$num_or_file -type f -depth 1 | head -1`
+    else
+        file=`find $BISTDIR_REPOS -type f -depth 2 | grep $num_or_file | head -1`
+    fi
+
+    if [ "$file" -a -f "$file" ]; then
+        cat $file
+    else
+        echo "$file not found." >&2
+        exit 0
+    fi
+}
+
+#
+# bist list [num]?
+#
+function bist_list() {
+    if [ $# -eq 1 ]; then
+        ls "$BISTDIR_REPOS/$1"
+    else 
+        for d in `find $BISTDIR_REPOS -type d -depth 1`
+        do
+            echo "`basename $d` `ls $d`"
+        done
+    fi
+}
+
+#
+# bist rehash
+#
+function bist_rehash() {
+    mkdir -p "$BISTDIR_BIN"
+    for d in `find $BISTDIR_REPOS -type d -depth 1`
+    do
+        file=`find $d -type f -depth 1 | head -1`
+        ln -Fs $file $BISTDIR_BIN/
+    done
+}
+
+#
+# bist rm [num]
+#
+function bist_rm () {
+    if [ $# -ne 1 ]; then
+        usage
+    fi
+
+    gistdir=$BISTDIR_REPOS/$2
+    if [ -d $gistdir ]; then
+        echo $gistdir
+        rm -rf $gistdir
+    fi
+}
+
+function bist_init () {
+    mkdir -p $BISTDIR_REPOS
+    mkdir -p $BISTDIR_BIN
+}
+
+# -----------------------------------
+# main
+# -----------------------------------
+
+if [ $# -lt 1 ]; then
+    usage
+fi
+
+command=$1
+shift
+
+case $command in
+    "list" | "l" ) bist_list $* ;;
+    "show" | "s" ) bist_show $* ;;
+    "rehash" | "r" ) bist_rehash ;;
+    "rm" ) bist_rm $* ;;
+    "install" | "i" ) bist_install $* ;;
+    "init" ) bist_init $* ;;
+    "update" | "u" ) bist_update $* ;;
+esac
+
+BISTCONTENT
+
+
+chmod a+x $BISTPATH
+sh $BISTPATH init
+
+cat <<USAGE
+please add PATH to your .zprofile or .bash_profile
+
+    # bist path
+    export PATH=\$PATH:$BISTDIR_BIN
+
+USAGE
+
