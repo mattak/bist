@@ -4,49 +4,49 @@ Control gist files to install.
 
 # install
 
-  curl http://mattak.github.io/bist/install.sh | sh
+    curl http://mattak.github.io/bist/install.sh | sh
 
 # commands
 
 ## list
 
-    bist list
-    > 5333258 ljust
+    $ bist list
+    5333258 ljust
 
-    bist list 5333258
-    > ljust
+    $ bist list 5333258
+    ljust
 
 ## show
 
 display repository content.
 
-    bist show ljust
-    bist show 5333258
-    > #!/bin/sh ...
+    $ bist show ljust
+    $ bist show 5333258
+    #!/bin/sh ...
 
 ## install
 
 install gist content.
 
-    bist install 5333258
+    $ bist install 5333258
 
 ## update
 
 update gist contents.
 
-    bist update
+    $ bist update
 
 ## rehash
 
 installed gist to link bin.
 
-    bist rehash
+    $ bist rehash
 
 ## rm
 
 remove repository.
 
-    bist rm 5333258
+    $ bist rm 5333258
 
 
 # directory
@@ -82,5 +82,5 @@ write your .bistrc .
     
 install to execute followings.
 
-    sh ~/.bistrc
+    $ sh ~/.bistrc
 
