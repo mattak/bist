@@ -145,7 +145,7 @@ function bist_rm () {
         usage
     fi
 
-    gistdir=$BISTDIR_REPOS/$2
+    gistdir=$BISTDIR_REPOS/$1
     if [ -d $gistdir ]; then
         echo $gistdir
         rm -rf $gistdir
