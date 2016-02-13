@@ -130,6 +130,12 @@ function bist_list() {
 #
 function bist_rehash() {
     mkdir -p "$BISTDIR_BIN"
+
+    for f in `find $BISTDIR_BIN -type l`
+    do
+      unlink $f
+    done
+
     for d in `find $BISTDIR_REPOS -type d -depth 1`
     do
         file=`find $d -type f -depth 1 | head -1`
