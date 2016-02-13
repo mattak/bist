@@ -66,6 +66,7 @@ function bist_install() {
         git clone "${GIST_URL}${gistnum}.git" $clonedir > /dev/null 2>&1
     else
         cd $clonedir
+        git reset --hard > /dev/null 2>&1
         git pull --rebase > /dev/null 2>&1
         cd - > /dev/null
     fi
