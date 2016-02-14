@@ -84,3 +84,6 @@ install to execute followings.
 
     $ sh ~/.bistrc
 
+# special thanks
+
+Some command bugs was fixed by [umi-uyura](https://github.com/umi-uyura).
